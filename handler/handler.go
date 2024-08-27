@@ -9,7 +9,7 @@ import (
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Cek apakah request memiliki header Authorization
+		// check if Authorization header is present
 		tokenString := r.Header.Get("Authorization")
 		claims, IsValid := VerifyJWT(tokenString)
 		if !IsValid {
@@ -33,9 +33,16 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Contoh validasi sederhana: pastikan username dan password tidak kosong
+	// validate username and password are not empty
 	if user.Username == "" || user.Password == "" {
 		http.Error(w, "Username and password are required", http.StatusBadRequest)
+		return
+	}
+
+	// if user already exists
+	_, err = model.GetUserPassword(user.Username)
+	if err == nil {
+		http.Error(w, "User already exists", http.StatusBadRequest)
 		return
 	}
 
@@ -64,20 +71,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Contoh validasi sederhana: pastikan username dan password tidak kosong
+	// validate username and password are not empty
 	if user.Username == "" || user.Password == "" {
 		http.Error(w, "Username and password are required", http.StatusBadRequest)
 		return
 	}
 
-	// Cek apakah user dengan username tersebut ada di database
+	// if user does not exist
 	hashedPassword, err := model.GetUserPassword(user.Username)
 	if err != nil {
 		http.Error(w, "Failed to get user: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Bandingkan password yang diinputkan dengan password di database
+	// check if password is correct
 	if !model.CheckPasswordHash(user.Password, hashedPassword) {
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return

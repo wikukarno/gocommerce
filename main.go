@@ -27,7 +27,7 @@ func main() {
 
     // Gunakan 'r' sebagai handler dalam ListenAndServe
     log.Println("Starting server on :8080")
-    if err := http.ListenAndServe(":8080", r); err != nil {
+    if err := http.ListenAndServe(":8000", r); err != nil {
         log.Fatal("ListenAndServe error: ", err)
     }
 }
